@@ -11,17 +11,18 @@ services:
         ports:
             - "3000:3000"
         environment:
-            - OPENVIDU_HOST=localhost:8080
+            - NODE_TLS_REJECT_UNAUTHORIZED=0
+            - OPENVIDU_HOST=nginx:8081
             - OPENVIDU_SECRET=${OPENVIDU_SECRET}
     openvidu:
         image: openvidu/openvidu-server:2.20.0
-        restart: on-failure
+        restart: always
         entrypoint: ['/usr/local/bin/entrypoint.sh']
         depends_on:
             - coturn
             - kms
         ports:
-            - "5443:5443"
+            - 5443
         volumes:
             - /var/run/docker.sock:/var/run/docker.sock
         environment:
@@ -62,7 +63,7 @@ services:
 
     coturn:
         image: openvidu/openvidu-coturn:5.0.0
-        restart: on-failure
+        restart: always
         depends_on:
             - redis
         ports:
