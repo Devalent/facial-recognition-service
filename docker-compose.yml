@@ -1,10 +1,94 @@
-version: '3.8'
+version: '3'
 
 services:
-    facial-recognition-application:
+    application:
         build:
             context: ./app
             dockerfile: Dockerfile
         restart: always
+        depends_on:
+            - openvidu
         ports:
             - "3000:3000"
+        environment:
+            - OPENVIDU_HOST=localhost:8080
+            - OPENVIDU_SECRET=${OPENVIDU_SECRET}
+    openvidu:
+        image: openvidu/openvidu-server:2.20.0
+        restart: on-failure
+        entrypoint: ['/usr/local/bin/entrypoint.sh']
+        depends_on:
+            - coturn
+            - kms
+        ports:
+            - "5443:5443"
+        volumes:
+            - /var/run/docker.sock:/var/run/docker.sock
+        environment:
+            - DOMAIN_OR_PUBLIC_IP=${DOMAIN_OR_PUBLIC_IP}
+            - OPENVIDU_SECRET=${OPENVIDU_SECRET}
+            - SERVER_SSL_ENABLED=false
+            - SERVER_PORT=5443
+            - HTTP_PORT=8080
+            - HTTPS_PORT=8081
+            - KMS_URIS=["ws://kms:8888/kurento"]
+            - COTURN_REDIS_IP=redis
+            - COTURN_REDIS_PASSWORD=${OPENVIDU_SECRET}
+            - COTURN_IP=${DOMAIN_OR_PUBLIC_IP}
+            # - OPENVIDU_WEBHOOK=true
+            # - OPENVIDU_WEBHOOK_ENDPOINT=http://service:3000/api/webhook
+            # - OPENVIDU_WEBHOOK_EVENTS=["participantJoined","participantLeft"]
+    kms:
+        image: kurento/kurento-media-server:6.16.0
+        restart: always
+        ulimits:
+          core: -1
+        ports:
+            - 8888
+        environment:
+            - KMS_MIN_PORT=40000
+            - KMS_MAX_PORT=57000
+            - KURENTO_LOG_FILE_SIZE=100
+            - KURENTO_LOGS_PATH=/opt/openvidu/kurento-logs
+
+    redis:
+        image: openvidu/openvidu-redis:3.0.0
+        restart: always
+        ports:
+            - 6379
+        environment:
+            - REDIS_PASSWORD=${OPENVIDU_SECRET}
+            - REDIS_BINDING=redis
+
+    coturn:
+        image: openvidu/openvidu-coturn:5.0.0
+        restart: on-failure
+        depends_on:
+            - redis
+        ports:
+            - 3478
+        environment:
+            - REDIS_IP=redis
+            - TURN_LISTEN_PORT=3478
+            - DB_NAME=0
+            - DB_PASSWORD=${OPENVIDU_SECRET}
+            - MIN_PORT=57001
+            - MAX_PORT=65535
+
+    nginx:
+        build:
+            context: ./nginx
+            dockerfile: Dockerfile
+        restart: always
+        depends_on:
+            - openvidu
+        ports:
+            - "8080:8080"
+            - "8081:8081"
+        environment:
+            - DOMAIN_OR_PUBLIC_IP=${DOMAIN_OR_PUBLIC_IP}
+            - CERTIFICATE_TYPE=selfsigned
+            - PROXY_HTTP_PORT=8080
+            - PROXY_HTTPS_PORT=8081
+            - WITH_APP=false
+            - PUBLIC_IP=127.0.0.1
