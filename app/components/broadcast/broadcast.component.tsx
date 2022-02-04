@@ -44,7 +44,7 @@ export class BroadcastComponent extends React.Component<{}, State> {
     }));
 
     try {
-      const { connection } = await fetch('/api/rtc', { method: 'POST' }).then(x => x.json());
+      const room = await fetch('/api/webrtc', { method: 'POST' }).then(x => x.json());
 
       this.session = this.client.initSession();
 
@@ -52,7 +52,7 @@ export class BroadcastComponent extends React.Component<{}, State> {
         console.warn('exception', exception);
       });
 
-      await this.session.connect(connection, {});
+      await this.session.connect(room.connection, {});
 
       const publisher = await this.client.initPublisherAsync(undefined as any, {
         audioSource: undefined,
@@ -74,7 +74,7 @@ export class BroadcastComponent extends React.Component<{}, State> {
         broadcasting: false,
       }));
     }
-  };
+  }
 
   render() {
     return (

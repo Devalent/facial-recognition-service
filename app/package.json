@@ -11,15 +11,23 @@
     "node": "=<14"
   },
   "dependencies": {
+    "canvas": "^2.9.0",
+    "jsonrpc-lite": "^2.2.0",
     "next": "12.0.10",
     "openvidu-browser": "2.20",
     "openvidu-node-client": "^2.20.2",
+    "promise-deferred": "^2.0.3",
     "react": "17.0.2",
-    "react-dom": "17.0.2"
+    "react-dom": "17.0.2",
+    "urijs": "^1.19.7",
+    "wrtc": "^0.4.7",
+    "ws": "^8.4.2"
   },
   "devDependencies": {
     "@types/node": "^14.18.10",
     "@types/react": "^17.0.39",
+    "@types/urijs": "^1.19.18",
+    "@types/ws": "^8.2.2",
     "eslint": "8.8.0",
     "eslint-config-next": "12.0.10",
     "sass": "^1.49.7",
