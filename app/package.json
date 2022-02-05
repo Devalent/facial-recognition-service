@@ -1,6 +1,17 @@
 {
   "name": "facial-recognition-application",
-  "private": true,
+  "description": "Facial recognition Next.js application example.",
+  "homepage": "https://github.com/Devalent/facial-recognition-service#readme",
+  "license": "MIT",
+  "author": {
+    "name": "Artem Abashev",
+    "url": "https://abashev.com/"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Devalent/facial-recognition-service.git",
+    "directory": "app"
+  },
   "scripts": {
     "dev": "next dev",
     "build": "next build",
