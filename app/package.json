@@ -16,7 +16,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "export": "STANDALONE=1 next build && next export"
   },
   "engines": {
     "node": "=<14"
@@ -28,6 +29,7 @@
     "canvas": "^2.9.0",
     "jsonrpc-lite": "^2.2.0",
     "next": "12.0.10",
+    "next-image-loader": "^2.0.6",
     "openvidu-browser": "2.20",
     "openvidu-node-client": "^2.20.2",
     "promise-deferred": "^2.0.3",

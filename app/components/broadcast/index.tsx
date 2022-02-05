@@ -18,9 +18,11 @@ export default class BroadcastComponent extends React.Component<{}, State> {
   private session:Session;
 
   componentDidMount() {
-    this.client = new OpenVidu();
+    if (!process.env.STANDALONE) {
+      this.client = new OpenVidu();
 
-    // this.client.enableProdMode();
+      // this.client.enableProdMode();
+    }
   }
 
   componentWillUnmount() {
@@ -36,15 +38,23 @@ export default class BroadcastComponent extends React.Component<{}, State> {
     }
   }
 
-  private async startBroadcast() {console.log(1)
+  private async startBroadcast() {
     this.setState((s) => ({
       ...s,
       status: 'preparing',
     }));
 
-    try {
+    if (!this.client) {
       await new Promise((r) => setTimeout(r, 2000));
 
+      this.setState((s) => ({
+        ...s,
+        status: 'broadcasting',
+      }));
+      return;
+    }
+
+    try {
       const room = await fetch('/api/webrtc', { method: 'POST' }).then(x => x.json());
 
       this.session = this.client.initSession();
