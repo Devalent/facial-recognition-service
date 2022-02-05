@@ -3,7 +3,8 @@ import { OpenViduRole } from 'openvidu-node-client';
 import { WebRtcConnection } from './openvidu/connection';
 import { WebRtcSnapshotter } from './openvidu/middleware';
 import { restClient, sendSignal } from './openvidu/rest';
-import { encodeFaces } from './recognition';
+import { encodeFaces } from './recognition/encoding';
+import { cropFaces } from './recognition/image';
 
 export type Room = {
   id:string;
@@ -35,16 +36,17 @@ export const createRoom = async ():Promise<Room> => {
       const faces = await encodeFaces(image);
 
       if (faces.length > 0) {
+        const crops = await cropFaces(image, faces);
+
+        const items = crops.map((photo, i) => ({ photo, face: faces[i] }));
+
         // Notify publisher over WebRTC
-        await sendSignal(session.sessionId, publisher.connectionId, 'recognition', {
-          image,
-          faces,
-        });
+        await sendSignal(session.sessionId, publisher.connectionId, 'recognition', { items });
       }
     } catch (error) {
       console.error(error);
     }
-  })
+  });
 
   // Create watcher WebRTC connection
   const peer = new WebRtcConnection(subscriber, middleware);
