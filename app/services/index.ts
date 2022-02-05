@@ -2,7 +2,7 @@ import { OpenViduRole } from 'openvidu-node-client';
 
 import { WebRtcConnection } from './openvidu/connection';
 import { WebRtcSnapshotter } from './openvidu/middleware';
-import { restClient } from './openvidu/rest';
+import { restClient, sendSignal } from './openvidu/rest';
 import { encodeFaces } from './recognition';
 
 export type Room = {
@@ -34,7 +34,13 @@ export const createRoom = async ():Promise<Room> => {
     try {
       const faces = await encodeFaces(image);
 
-      console.log(faces);
+      if (faces.length > 0) {
+        // Notify publisher over WebRTC
+        await sendSignal(session.sessionId, publisher.connectionId, 'recognition', {
+          image,
+          faces,
+        });
+      }
     } catch (error) {
       console.error(error);
     }

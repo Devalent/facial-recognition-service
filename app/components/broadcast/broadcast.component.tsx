@@ -1,6 +1,7 @@
 import {
   OpenVidu,
   Session,
+  SignalEvent,
 } from 'openvidu-browser';
 import React from 'react';
 
@@ -65,6 +66,10 @@ export class BroadcastComponent extends React.Component<{}, State> {
       });
     
       await this.session.publish(publisher);
+
+      this.session.on('signal:recognition', (event:SignalEvent) => {
+        console.log(JSON.parse(event.data));
+      });
     } catch (error) {
       console.warn(error);
       alert(`WebRTC error: ${error.message}`);
