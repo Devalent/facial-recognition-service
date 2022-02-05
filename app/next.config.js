@@ -7,7 +7,7 @@ const withImageLoader = require('next-image-loader');
  **/
 module.exports = withImageLoader({
   reactStrictMode: true,
-  assetPrefix: './',
+  assetPrefix: process.env.ASSETS_PREFIX || './',
   images: {
     loader: 'custom',
   },
