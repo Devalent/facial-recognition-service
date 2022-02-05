@@ -7,7 +7,7 @@ const withImageLoader = require('next-image-loader');
  **/
 module.exports = withImageLoader({
   reactStrictMode: true,
-  assetPrefix: process.env.API_TOKEN_GITHUB ? './' : '',
+  assetPrefix: './',
   images: {
     loader: 'custom',
   },
