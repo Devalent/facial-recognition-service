@@ -15,6 +15,7 @@ services:
             - NODE_TLS_REJECT_UNAUTHORIZED=0
             - OPENVIDU_HOST=nginx:8081
             - OPENVIDU_SECRET=${OPENVIDU_SECRET}
+            - WORKER_HOST=worker:3000
     worker:
         build:
             context: ./worker

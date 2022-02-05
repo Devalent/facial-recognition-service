@@ -1,8 +1,9 @@
 import { OpenViduRole } from 'openvidu-node-client';
 
-import { WebRtcConnection } from './connection';
-import { WebRtcSnapshotter } from './middleware';
-import { restClient } from './rest';
+import { WebRtcConnection } from './openvidu/connection';
+import { WebRtcSnapshotter } from './openvidu/middleware';
+import { restClient } from './openvidu/rest';
+import { encodeFaces } from './recognition';
 
 export type Room = {
   id:string;
@@ -25,11 +26,18 @@ export const createRoom = async ():Promise<Room> => {
     data: JSON.stringify({}),
   });
   
-  // Take regular video snapshots
-  const middleware = new WebRtcSnapshotter();
+  // Take video snapshots every 1000 ms
+  const middleware = new WebRtcSnapshotter(1000);
 
-  middleware.on('screenshot', (data) => {
-    console.log(data);
+  // Find faces in snapshots
+  middleware.on('screenshot', async (image) => {
+    try {
+      const faces = await encodeFaces(image);
+
+      console.log(faces);
+    } catch (error) {
+      console.error(error);
+    }
   })
 
   // Create watcher WebRTC connection

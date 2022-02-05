@@ -1,6 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 
-import { createRoom } from '../../services/openvidu';
+import { createRoom } from '../../services';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   try {

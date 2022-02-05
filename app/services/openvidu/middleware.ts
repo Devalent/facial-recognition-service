@@ -11,6 +11,10 @@ export declare interface WebRtcSnapshotter {
 }
 
 export class WebRtcSnapshotter extends EventEmitter implements ConnectionMiddleware {
+  constructor(private readonly interval:number = 1000) {
+    super();
+  }
+
   use(peerConnection) {
     const source = new RTCVideoSource();
     const track = source.createTrack();
@@ -38,7 +42,7 @@ export class WebRtcSnapshotter extends EventEmitter implements ConnectionMiddlew
 
         this.emit('screenshot', canvas.toDataURL('image/jpeg'));
       }
-    }, 1000);
+    }, this.interval);
 
     peerConnection.addEventListener('connectionstatechange', () => {
       if (peerConnection.connectionState === 'closed') {
