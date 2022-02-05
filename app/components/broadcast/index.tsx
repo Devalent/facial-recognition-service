@@ -5,6 +5,9 @@ import {
 } from 'openvidu-browser';
 import React from 'react';
 
+import { useAppSelector, useAppDispatch } from '../../store';
+import { connect, disconnect, broadcast } from '../../store/demo';
+
 type State = {
   status:'ready'|'preparing'|'broadcasting';
 }
@@ -39,18 +42,20 @@ export default class BroadcastComponent extends React.Component<{}, State> {
   }
 
   private async startBroadcast() {
-    this.setState((s) => ({
-      ...s,
-      status: 'preparing',
-    }));
+    useAppDispatch()(connect());
+    // this.setState((s) => ({
+    //   ...s,
+    //   status: 'preparing',
+    // }));
 
     if (!this.client) {
       await new Promise((r) => setTimeout(r, 2000));
 
-      this.setState((s) => ({
-        ...s,
-        status: 'broadcasting',
-      }));
+      useAppDispatch()(broadcast());
+      // this.setState((s) => ({
+      //   ...s,
+      //   status: 'broadcasting',
+      // }));
       return;
     }
 
@@ -97,10 +102,12 @@ export default class BroadcastComponent extends React.Component<{}, State> {
   }
 
   render() {
+    const status = useAppSelector(s => s.demo.value);
+
     return (
       <div>
-        { (this.state.status === 'ready' || this.state.status === 'preparing') && 
-          <button className="btn btn-outline-dark flex-shrink-0" type="button" onClick={() => this.startBroadcast()} disabled={this.state.status === 'preparing'}>
+        { (status === 'ready' || status === 'preparing') && 
+          <button className="btn btn-outline-dark flex-shrink-0" type="button" onClick={() => this.startBroadcast()} disabled={status === 'preparing'}>
             <i className="bi-play-circle-fill me-1"></i>
             Launch demo
           </button>
