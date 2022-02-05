@@ -8,12 +8,20 @@ services:
         restart: always
         depends_on:
             - openvidu
+            - worker
         ports:
             - "3000:3000"
         environment:
             - NODE_TLS_REJECT_UNAUTHORIZED=0
             - OPENVIDU_HOST=nginx:8081
             - OPENVIDU_SECRET=${OPENVIDU_SECRET}
+    worker:
+        build:
+            context: ./worker
+            dockerfile: Dockerfile
+        restart: always
+        ports:
+            - 3000
     openvidu:
         image: openvidu/openvidu-server:2.20.0
         restart: always
