@@ -1,22 +1,27 @@
 import {
   OpenVidu,
+  Publisher,
   Session,
   SignalEvent,
 } from 'openvidu-browser';
 import React from 'react';
 
 import { useAppSelector, useAppDispatch } from '../../store';
-import { changeState, DemoState } from '../../store/demo';
+import { changeState, setError, DemoState } from '../../store/demo';
 
 class Broadcast extends React.Component<{
+  isStandalone:boolean;
   state:DemoState;
-  stateChanged:(state:DemoState) => void;
+  onStateChanged:(state:DemoState) => void;
+  onError:(error:Error) => void;
+  video:HTMLVideoElement;
 }> {
   private client:OpenVidu;
   private session:Session;
+  private publisher:Publisher;
 
   componentDidMount() {
-    if (!process.env.STANDALONE) {
+    if (!this.props.isStandalone) {
       this.client = new OpenVidu();
 
       // this.client.enableProdMode();
@@ -24,25 +29,24 @@ class Broadcast extends React.Component<{
   }
 
   componentWillUnmount() {
-    if (this.session) {
-      try {
-        this.session.off('exception');
-        this.session.disconnect();
-      } catch (e) {
-        console.warn(e);
-      } finally {
-        this.session = undefined;
-      }
+    this.dispose();    
+  }
+
+  componentDidUpdate() {
+    const { video } = this.props;
+
+    if (this.props.state === 'broadcasting' && video) {
+      this.attachVideo(video);
     }
   }
 
   private async startBroadcast() {
-    this.props.stateChanged('preparing');
+    this.props.onStateChanged('preparing');
 
-    if (!this.client) {
+    if (this.props.isStandalone) {
       await new Promise((r) => setTimeout(r, 2000));
 
-      this.props.stateChanged('broadcasting');
+      this.props.onStateChanged('broadcasting');
       return;
     }
 
@@ -57,28 +61,62 @@ class Broadcast extends React.Component<{
 
       await this.session.connect(room.connection, {});
 
-      const publisher = await this.client.initPublisherAsync(undefined as any, {
+      this.publisher = await this.client.initPublisherAsync(undefined as any, {
         audioSource: undefined,
         videoSource: undefined,
-        publishAudio: true,
+        publishAudio: false,
         publishVideo: true,
         resolution: '640x480',
         frameRate: 30,
         mirror: false,
       });
     
-      await this.session.publish(publisher);
+      await this.session.publish(this.publisher);
 
-      this.session.on('signal:recognition', (event:SignalEvent) => {
+      this.session.on('signal', (event:SignalEvent) => {
         console.log(JSON.parse(event.data));
       });
 
-      this.props.stateChanged('broadcasting');
-    } catch (error) {
-      console.warn(error);
-      alert(`WebRTC error: ${error.message}`);
+      this.props.onStateChanged('broadcasting');
 
-      this.props.stateChanged('ready');
+      if (this.props.video) {
+        this.attachVideo(this.props.video);
+      }
+    } catch (error) {
+      this.dispose();
+
+      this.props.onStateChanged('ready');
+      this.props.onError(error);
+    }
+  }
+
+  private async stopBroadcast() {
+    this.props.onStateChanged('ready');
+
+    this.dispose();
+  }
+
+  private dispose() {
+    this.publisher = undefined;
+
+    if (this.session) {
+      try {
+        this.session.off('exception');
+        this.session.off('signal');
+
+        this.session.disconnect();
+      } catch (e) {}
+      this.session = undefined;
+    }
+  }
+
+  private attachVideo(video:HTMLVideoElement) {
+    if (this.props.isStandalone) {
+      return;
+    }
+
+    if (this.publisher.videoReference !== video) {
+      this.publisher.addVideoElement(video);
     }
   }
 
@@ -88,9 +126,24 @@ class Broadcast extends React.Component<{
     return (
       <div>
         { (state === 'ready' || state === 'preparing') && 
-          <button className="btn btn-outline-dark flex-shrink-0" type="button" onClick={() => this.startBroadcast()} disabled={state === 'preparing'}>
+          <button
+            className="btn btn-outline-dark flex-shrink-0"
+            type="button"
+            onClick={() => this.startBroadcast()}
+            disabled={state === 'preparing'}
+          >
             <i className="bi-play-circle-fill me-1"></i>
             Launch demo
+          </button>
+        }
+        { (state === 'broadcasting') && 
+          <button
+            className="btn btn-outline-dark flex-shrink-0"
+            type="button"
+            onClick={() => this.stopBroadcast()}
+          >
+            <i className="bi-stop-circle-fill me-1"></i>
+            Stop
           </button>
         }
       </div>
@@ -98,9 +151,15 @@ class Broadcast extends React.Component<{
   }
 }
 
-export default function BroadcastComponent() {
-  const state = useAppSelector(s => s.demo.value);
+export default function BroadcastComponent({ video }) {
+  const isStandalone = useAppSelector(s => s.demo.isStandalone);
+  const state = useAppSelector(s => s.demo.status);
   const dispatch = useAppDispatch();
 
-  return <Broadcast state={state} stateChanged={(s) => dispatch(changeState(s))} />
+  return <Broadcast
+    isStandalone={isStandalone}
+    state={state}
+    video={video}
+    onStateChanged={(s) => dispatch(changeState(s))}
+    onError={(err) => dispatch(setError(err.message))} />
 };

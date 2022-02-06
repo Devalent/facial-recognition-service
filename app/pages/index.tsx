@@ -1,15 +1,23 @@
 import dynamic from 'next/dynamic';
 import Head from 'next/head';
+import { useState } from 'react';
 
 import Fork from '../components/fork';
 import Logo from '../components/logo';
 import Noise from '../components/noise';
+
+import { useAppSelector } from '../store';
 
 import styles from '../styles/Home.module.scss';
 
 const BroacastComponent = dynamic(() => import('../components/broadcast'), { ssr: false });
 
 export default function Home() {
+  const status = useAppSelector(s => s.demo.status);
+  const isStandalone = useAppSelector(s => s.demo.isStandalone);
+
+  const [video, setVideo] = useState(null);
+
   return (
     <div className={styles.container}>
       <Head>
@@ -24,13 +32,18 @@ export default function Home() {
           <div className="container px-4 px-lg-5 my-5">
               <div className="row gx-4 gx-lg-5 align-items-center">
                   <div className="col-md-6">
-                    <Noise />  
+                    { status !== 'broadcasting' && 
+                        <Noise /> }
+                    { status === 'broadcasting' && !isStandalone &&
+                        <video width={640} height={480} ref={e => setVideo(e)} style={{ width: '100%', height: 'auto', maxWidth: 640 }}></video> }
+                    { status === 'broadcasting' && isStandalone &&
+                        <div>Video</div> }
                   </div>
                   <div className="col-md-6">
                       <h1 className="display-5 fw-bolder">Facial recognition demo</h1>
                       <p className="lead">Lorem ipsum dolor sit amet consectetur adipisicing elit. Praesentium at dolorem quidem modi. Nam sequi consequatur obcaecati excepturi alias magni, accusamus eius blanditiis delectus ipsam minima ea iste laborum vero?</p>
                       <div className="d-flex">
-                          <BroacastComponent />
+                          <BroacastComponent video={video} />
                       </div>
                   </div>
               </div>
