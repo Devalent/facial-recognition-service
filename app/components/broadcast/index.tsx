@@ -6,17 +6,12 @@ import {
 import React from 'react';
 
 import { useAppSelector, useAppDispatch } from '../../store';
-import { connect, disconnect, broadcast } from '../../store/demo';
+import { changeState, DemoState } from '../../store/demo';
 
-type State = {
-  status:'ready'|'preparing'|'broadcasting';
-}
-
-export default class BroadcastComponent extends React.Component<{}, State> {
-  state:State = {
-    status: 'ready',
-  };
-
+class Broadcast extends React.Component<{
+  state:DemoState;
+  stateChanged:(state:DemoState) => void;
+}> {
   private client:OpenVidu;
   private session:Session;
 
@@ -42,20 +37,12 @@ export default class BroadcastComponent extends React.Component<{}, State> {
   }
 
   private async startBroadcast() {
-    useAppDispatch()(connect());
-    // this.setState((s) => ({
-    //   ...s,
-    //   status: 'preparing',
-    // }));
+    this.props.stateChanged('preparing');
 
     if (!this.client) {
       await new Promise((r) => setTimeout(r, 2000));
 
-      useAppDispatch()(broadcast());
-      // this.setState((s) => ({
-      //   ...s,
-      //   status: 'broadcasting',
-      // }));
+      this.props.stateChanged('broadcasting');
       return;
     }
 
@@ -86,28 +73,22 @@ export default class BroadcastComponent extends React.Component<{}, State> {
         console.log(JSON.parse(event.data));
       });
 
-      this.setState((s) => ({
-        ...s,
-        status: 'broadcasting',
-      }));
+      this.props.stateChanged('broadcasting');
     } catch (error) {
       console.warn(error);
       alert(`WebRTC error: ${error.message}`);
 
-      this.setState((s) => ({
-        ...s,
-        status: 'ready',
-      }));
+      this.props.stateChanged('ready');
     }
   }
 
   render() {
-    const status = useAppSelector(s => s.demo.value);
+    const { state } = this.props;
 
     return (
       <div>
-        { (status === 'ready' || status === 'preparing') && 
-          <button className="btn btn-outline-dark flex-shrink-0" type="button" onClick={() => this.startBroadcast()} disabled={status === 'preparing'}>
+        { (state === 'ready' || state === 'preparing') && 
+          <button className="btn btn-outline-dark flex-shrink-0" type="button" onClick={() => this.startBroadcast()} disabled={state === 'preparing'}>
             <i className="bi-play-circle-fill me-1"></i>
             Launch demo
           </button>
@@ -116,3 +97,10 @@ export default class BroadcastComponent extends React.Component<{}, State> {
     )
   }
 }
+
+export default function BroadcastComponent() {
+  const state = useAppSelector(s => s.demo.value);
+  const dispatch = useAppDispatch();
+
+  return <Broadcast state={state} stateChanged={(s) => dispatch(changeState(s))} />
+};
