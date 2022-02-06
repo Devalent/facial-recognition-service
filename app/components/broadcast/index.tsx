@@ -4,12 +4,14 @@ import {
   Session,
   SignalEvent,
 } from 'openvidu-browser';
-import React from 'react';
+import React, { useState } from 'react';
+
+import Noise from '../noise';
 
 import { useAppSelector, useAppDispatch } from '../../store';
 import { changeState, setError, DemoState } from '../../store/demo';
 
-class Broadcast extends React.Component<{
+class BroadcastButton extends React.Component<{
   isStandalone:boolean;
   state:DemoState;
   onStateChanged:(state:DemoState) => void;
@@ -151,15 +153,36 @@ class Broadcast extends React.Component<{
   }
 }
 
-export default function BroadcastComponent({ video }) {
+export default function BroadcastComponent() {
   const isStandalone = useAppSelector(s => s.demo.isStandalone);
-  const state = useAppSelector(s => s.demo.status);
+  const status = useAppSelector(s => s.demo.status);
   const dispatch = useAppDispatch();
+  const [video, setVideo] = useState(null);
 
-  return <Broadcast
-    isStandalone={isStandalone}
-    state={state}
-    video={video}
-    onStateChanged={(s) => dispatch(changeState(s))}
-    onError={(err) => dispatch(setError(err.message))} />
+  return (
+    <div className="container px-4 px-lg-5 my-5">
+        <div className="row gx-4 gx-lg-5 align-items-center">
+            <div className="col-md-6">
+              { status !== 'broadcasting' && 
+                  <Noise /> }
+              { status === 'broadcasting' && !isStandalone &&
+                  <video width={640} height={480} ref={e => setVideo(e)} style={{ width: '100%', height: 'auto', maxWidth: 640 }}></video> }
+              { status === 'broadcasting' && isStandalone &&
+                  <div>Video</div> }
+            </div>
+            <div className="col-md-6">
+                <h1 className="display-5 fw-bolder">Facial recognition demo</h1>
+                <p className="lead">Lorem ipsum dolor sit amet consectetur adipisicing elit. Praesentium at dolorem quidem modi. Nam sequi consequatur obcaecati excepturi alias magni, accusamus eius blanditiis delectus ipsam minima ea iste laborum vero?</p>
+                <div className="d-flex">
+                    <BroadcastButton
+                      isStandalone={isStandalone}
+                      state={status}
+                      video={video}
+                      onStateChanged={(s) => dispatch(changeState(s))}
+                      onError={(err) => dispatch(setError(err.message))} />
+                </div>
+            </div>
+        </div>
+    </div>
+  )
 };
