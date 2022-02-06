@@ -1,6 +1,6 @@
 import React, { createContext } from 'react';
 
-import { useAppDispatch, useAppSelector } from '../../store';
+import { useAppDispatch } from '../../store';
 
 import { WebRtcService, FakeRtcService } from './service';
 

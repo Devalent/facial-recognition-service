@@ -7,7 +7,6 @@ export const demoSlice = createSlice({
   initialState: {
     isStandalone: !!process.env.STANDALONE,
     status: 'ready' as DemoState,
-    video: null as HTMLVideoElement,
   },
   reducers: {
     changeState: (state, action) => {

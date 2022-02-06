@@ -88,13 +88,9 @@ export const slice = createSlice({
         .sort((a, b) => a.created - b.created)
         .filter((x, i) => i < 20);
     },
-    addRandomRecognitions: (state, action) => {
-      console.log('random');
-      const seed = action.payload as number;
-    },
   },
 })
 
 export default slice.reducer;
 
-export const { addRecognitions, addRandomRecognitions } = slice.actions;
+export const { addRecognitions } = slice.actions;

@@ -5,13 +5,13 @@ import Fork from '../components/fork';
 import Footer from '../components/footer';
 import Recognition from '../components/recognition';
 
-import styles from '../styles/Home.module.scss';
-
+// Dynamically import component so that server-side rendering is never used
+// to avoid having issues with OpenVidu client
 const BroadcastContainer = dynamic(() => import('../components/broadcast'), { ssr: false });
 
 export default function Home() {
   return (
-    <div className={styles.container}>
+    <div>
       <Head>
         <title>Facial recognition demo</title>
         <link rel="icon" href="/favicon.ico" />
