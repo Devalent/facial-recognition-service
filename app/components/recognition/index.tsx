@@ -40,6 +40,6 @@ export default function Recognition() {
           </div>
 
       </div>
-  </div>
+    </div>
   );
 }

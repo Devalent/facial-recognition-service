@@ -10,12 +10,14 @@ import Noise from '../noise';
 
 import { useAppSelector, useAppDispatch } from '../../store';
 import { changeState, setError, DemoState } from '../../store/demo';
+import { Recognition, addRecognitions } from '../../store/recognition';
 
 class BroadcastButton extends React.Component<{
   isStandalone:boolean;
   state:DemoState;
   onStateChanged:(state:DemoState) => void;
   onError:(error:Error) => void;
+  onRecognition:(items:Recognition[]) => void;
   video:HTMLVideoElement;
 }> {
   private client:OpenVidu;
@@ -76,7 +78,14 @@ class BroadcastButton extends React.Component<{
       await this.session.publish(this.publisher);
 
       this.session.on('signal', (event:SignalEvent) => {
-        console.log(JSON.parse(event.data));
+        console.log(event);
+        if (event.type === 'recognition') {
+          const items = JSON.parse(event.data) as Recognition[];
+
+          if (items.length > 0) {
+            this.props.onRecognition(items);
+          }
+        }
       });
 
       this.props.onStateChanged('broadcasting');
@@ -179,7 +188,8 @@ export default function BroadcastComponent() {
                       state={status}
                       video={video}
                       onStateChanged={(s) => dispatch(changeState(s))}
-                      onError={(err) => dispatch(setError(err.message))} />
+                      onError={(err) => dispatch(setError(err.message))}
+                      onRecognition={(l) => dispatch(addRecognitions(l))} />
                 </div>
             </div>
         </div>
