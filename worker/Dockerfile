@@ -6,6 +6,7 @@ RUN apt-get update -y \
     && apt-get install -y cmake
 
 RUN mkdir -p /usr/src/app
+RUN mkdir -p /usr/src/app/data
 
 WORKDIR /usr/src/app
 
