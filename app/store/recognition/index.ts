@@ -16,6 +16,7 @@ export type RecognitionMatch = {
   image:string;
   name:string;
   encodings:number[];
+  distance?:number;
 };
 
 type RecognitionCandidate = {
@@ -57,7 +58,7 @@ export const slice = createSlice({
   
           const distance = Math.sqrt(sum);
   
-          if (distance > 0 && distance < DISTANCE_THRESHOLD) {
+          if (distance >= 0 && distance < DISTANCE_THRESHOLD) {
             candidates.push({
               match,
               distance,
@@ -76,6 +77,7 @@ export const slice = createSlice({
           name: candidate
             ? candidate.match.name
             : `Person #${++state.uniques}`,
+          distance: candidate?.distance,
         };
 
         addedItems.push(addItem);

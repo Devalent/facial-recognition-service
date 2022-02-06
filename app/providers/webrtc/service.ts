@@ -9,6 +9,8 @@ import { AppDispatch } from '../../store';
 import { changeState, setError} from '../../store/demo';
 import { addRecognitions, Recognition } from '../../store/recognition';
 
+import fakeData from './data';
+
 export class FakeRtcService {
   private interval:NodeJS.Timer;
 
@@ -24,7 +26,22 @@ export class FakeRtcService {
     this.dispatch(changeState('broadcasting'));
 
     this.interval = setInterval(() => {
-      console.log('random');
+      const indexes:number[] = [];
+      const total = Math.min(Math.ceil(Math.random() * 3), fakeData.length);
+
+      while (indexes.length < total) {
+        const i = Math.floor(Math.random() * fakeData.length);
+
+        if (!indexes.includes(i)) {
+          indexes.push(i);
+        }
+      }
+
+      const items = indexes.map(i => fakeData[i]);
+
+      if (items.length > 0) {
+        this.dispatch(addRecognitions(items));
+      }
     }, 1000);
   }
 
