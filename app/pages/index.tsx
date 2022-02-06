@@ -7,7 +7,7 @@ import Recognition from '../components/recognition';
 
 import styles from '../styles/Home.module.scss';
 
-const BroacastComponent = dynamic(() => import('../components/broadcast'), { ssr: false });
+const BroadcastContainer = dynamic(() => import('../components/broadcast'), { ssr: false });
 
 export default function Home() {
   return (
@@ -21,7 +21,7 @@ export default function Home() {
       <Fork />
 
       <section className="py-5">
-        <BroacastComponent />
+        <BroadcastContainer />
       </section>
       
       <section className="py-5 bg-light">

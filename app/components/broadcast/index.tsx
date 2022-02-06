@@ -1,172 +1,24 @@
-import {
-  OpenVidu,
-  Publisher,
-  Session,
-  SignalEvent,
-} from 'openvidu-browser';
-import React, { useState } from 'react';
+import React, { useContext } from 'react';
 
 import Noise from '../noise';
 
-import { useAppSelector, useAppDispatch } from '../../store';
-import { changeState, setError, DemoState } from '../../store/demo';
-import { Recognition, addRecognitions } from '../../store/recognition';
+import WebRtcProvider, { WebRtcContext } from '../../providers/webrtc';
 
-class BroadcastButton extends React.Component<{
-  isStandalone:boolean;
-  state:DemoState;
-  onStateChanged:(state:DemoState) => void;
-  onError:(error:Error) => void;
-  onRecognition:(items:Recognition[]) => void;
-  video:HTMLVideoElement;
-}> {
-  private client:OpenVidu;
-  private session:Session;
-  private publisher:Publisher;
+import { useAppSelector } from '../../store';
 
-  componentDidMount() {
-    if (!this.props.isStandalone) {
-      this.client = new OpenVidu();
-
-      // this.client.enableProdMode();
-    }
-  }
-
-  componentWillUnmount() {
-    this.dispose();    
-  }
-
-  componentDidUpdate() {
-    const { video } = this.props;
-
-    if (this.props.state === 'broadcasting' && video) {
-      this.attachVideo(video);
-    }
-  }
-
-  private async startBroadcast() {
-    this.props.onStateChanged('preparing');
-
-    if (this.props.isStandalone) {
-      await new Promise((r) => setTimeout(r, 2000));
-
-      this.props.onStateChanged('broadcasting');
-      return;
-    }
-
-    try {
-      const room = await fetch('/api/webrtc', { method: 'POST' }).then(x => x.json());
-
-      this.session = this.client.initSession();
-
-      this.session.on('exception', (exception) => {
-        console.warn('exception', exception);
-      });
-
-      await this.session.connect(room.connection, {});
-
-      this.publisher = await this.client.initPublisherAsync(undefined as any, {
-        audioSource: undefined,
-        videoSource: undefined,
-        publishAudio: false,
-        publishVideo: true,
-        resolution: '640x480',
-        frameRate: 30,
-        mirror: false,
-      });
-    
-      await this.session.publish(this.publisher);
-
-      this.session.on('signal', (event:SignalEvent) => {
-        console.log(event);
-        if (event.type === 'recognition') {
-          const items = JSON.parse(event.data) as Recognition[];
-
-          if (items.length > 0) {
-            this.props.onRecognition(items);
-          }
-        }
-      });
-
-      this.props.onStateChanged('broadcasting');
-
-      if (this.props.video) {
-        this.attachVideo(this.props.video);
-      }
-    } catch (error) {
-      this.dispose();
-
-      this.props.onStateChanged('ready');
-      this.props.onError(error);
-    }
-  }
-
-  private async stopBroadcast() {
-    this.props.onStateChanged('ready');
-
-    this.dispose();
-  }
-
-  private dispose() {
-    this.publisher = undefined;
-
-    if (this.session) {
-      try {
-        this.session.off('exception');
-        this.session.off('signal');
-
-        this.session.disconnect();
-      } catch (e) {}
-      this.session = undefined;
-    }
-  }
-
-  private attachVideo(video:HTMLVideoElement) {
-    if (this.props.isStandalone) {
-      return;
-    }
-
-    if (this.publisher.videoReference !== video) {
-      this.publisher.addVideoElement(video);
-    }
-  }
-
-  render() {
-    const { state } = this.props;
-
-    return (
-      <div>
-        { (state === 'ready' || state === 'preparing') && 
-          <button
-            className="btn btn-outline-dark flex-shrink-0"
-            type="button"
-            onClick={() => this.startBroadcast()}
-            disabled={state === 'preparing'}
-          >
-            <i className="bi-play-circle-fill me-1"></i>
-            Launch demo
-          </button>
-        }
-        { (state === 'broadcasting') && 
-          <button
-            className="btn btn-outline-dark flex-shrink-0"
-            type="button"
-            onClick={() => this.stopBroadcast()}
-          >
-            <i className="bi-stop-circle-fill me-1"></i>
-            Stop
-          </button>
-        }
-      </div>
-    )
-  }
+export default function BroadcastContainer() {
+  return (
+    <WebRtcProvider>
+      <BroadcastComponent />
+    </WebRtcProvider>
+  );
 }
 
-export default function BroadcastComponent() {
+export function BroadcastComponent() {
   const isStandalone = useAppSelector(s => s.demo.isStandalone);
   const status = useAppSelector(s => s.demo.status);
-  const dispatch = useAppDispatch();
-  const [video, setVideo] = useState(null);
+
+  const webrtc = useContext(WebRtcContext);
 
   return (
     <div className="container px-4 px-lg-5 my-5">
@@ -175,7 +27,7 @@ export default function BroadcastComponent() {
               { status !== 'broadcasting' && 
                   <Noise /> }
               { status === 'broadcasting' && !isStandalone &&
-                  <video width={640} height={480} ref={e => setVideo(e)} style={{ width: '100%', height: 'auto', maxWidth: 640 }}></video> }
+                  <video width={640} height={480} ref={e => webrtc.attachVideo(e)} style={{ width: '100%', height: 'auto', maxWidth: 640 }}></video> }
               { status === 'broadcasting' && isStandalone &&
                   <div>Video</div> }
             </div>
@@ -183,13 +35,29 @@ export default function BroadcastComponent() {
                 <h1 className="display-5 fw-bolder">Facial recognition demo</h1>
                 <p className="lead">Lorem ipsum dolor sit amet consectetur adipisicing elit. Praesentium at dolorem quidem modi. Nam sequi consequatur obcaecati excepturi alias magni, accusamus eius blanditiis delectus ipsam minima ea iste laborum vero?</p>
                 <div className="d-flex">
-                    <BroadcastButton
-                      isStandalone={isStandalone}
-                      state={status}
-                      video={video}
-                      onStateChanged={(s) => dispatch(changeState(s))}
-                      onError={(err) => dispatch(setError(err.message))}
-                      onRecognition={(l) => dispatch(addRecognitions(l))} />
+                  <div>
+                    { (status === 'ready' || status === 'preparing') && 
+                      <button
+                        className="btn btn-outline-dark flex-shrink-0"
+                        type="button"
+                        onClick={() => webrtc.startBroadcast()}
+                        disabled={status === 'preparing'}
+                      >
+                        <i className="bi-play-circle-fill me-1"></i>
+                        Launch demo
+                      </button>
+                    }
+                    { (status === 'broadcasting') && 
+                      <button
+                        className="btn btn-outline-dark flex-shrink-0"
+                        type="button"
+                        onClick={() => webrtc.stopBroadcast()}
+                      >
+                        <i className="bi-stop-circle-fill me-1"></i>
+                        Stop
+                      </button>
+                    }
+                  </div>
                 </div>
             </div>
         </div>

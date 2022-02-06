@@ -1,5 +1,10 @@
 import { createSlice } from '@reduxjs/toolkit';
 
+export type Room = {
+  id:string;
+  connection:string;
+};
+
 export type Recognition = {
   image:string;
   encodings:number[];
@@ -26,11 +31,11 @@ export const slice = createSlice({
     matches: [] as RecognitionMatch[],
   },
   reducers: {
-    addRecognitions: (state, payload) => {
+    addRecognitions: (state, action) => {
       const DISTANCE_THRESHOLD = 0.5;
 
       const existingItems = state.matches;
-      const newItems = payload.payload as Recognition[];
+      const newItems = action.payload as Recognition[];
 
       const addedItems = [] as RecognitionMatch[];
   
@@ -83,9 +88,13 @@ export const slice = createSlice({
         .sort((a, b) => a.created - b.created)
         .filter((x, i) => i < 20);
     },
+    addRandomRecognitions: (state, action) => {
+      console.log('random');
+      const seed = action.payload as number;
+    },
   },
 })
 
 export default slice.reducer;
 
-export const { addRecognitions } = slice.actions;
+export const { addRecognitions, addRandomRecognitions } = slice.actions;

@@ -4,7 +4,6 @@ import { TypedUseSelectorHook, useDispatch, useSelector } from 'react-redux';
 import demoReducer from './demo';
 import recognitionReducer from './recognition';
 
-
 export const store = configureStore({
   reducer: {
     demo: demoReducer,
