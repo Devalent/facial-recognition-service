@@ -1,2 +1,4 @@
 aiohttp
 face_recognition
+numpy
+Pillow

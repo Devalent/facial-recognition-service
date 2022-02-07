@@ -17,9 +17,11 @@ services:
             - OPENVIDU_SECRET=${OPENVIDU_SECRET}
             - WORKER_HOST=worker:3000
     worker:
-        build:
-            context: ./worker
-            dockerfile: Dockerfile
+        image: artema/facial-recognition-worker:latest
+        # build:
+        #     context: ./worker
+        #     dockerfile: Dockerfile
+        platform: linux/amd64
         restart: always
         ports:
             - 3000
@@ -60,7 +62,6 @@ services:
             - KMS_MAX_PORT=57000
             - KURENTO_LOG_FILE_SIZE=100
             - KURENTO_LOGS_PATH=/opt/openvidu/kurento-logs
-
     redis:
         image: openvidu/openvidu-redis:3.0.0
         restart: always
@@ -69,7 +70,6 @@ services:
         environment:
             - REDIS_PASSWORD=${OPENVIDU_SECRET}
             - REDIS_BINDING=redis
-
     coturn:
         image: openvidu/openvidu-coturn:5.0.0
         restart: always
@@ -84,7 +84,6 @@ services:
             - DB_PASSWORD=${OPENVIDU_SECRET}
             - MIN_PORT=57001
             - MAX_PORT=65535
-
     nginx:
         build:
             context: ./nginx
