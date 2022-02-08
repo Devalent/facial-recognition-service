@@ -8,9 +8,9 @@ A [demo application](https://devalent.github.io/facial-recognition-app/) is avai
 
 ## Usage
 
-* ```docker-compose up --force-recreate --abort-on-container-exit```;
-* Wait for "Application is running!" message;
-* Allow invalid certificates for resources loaded from localhost (see [chrome://flags/#allow-insecure-localhost](chrome://flags/#allow-insecure-localhost));
+* `docker-compose up --force-recreate --abort-on-container-exit`;
+* Wait for an "Application is running!" message;
+* Allow invalid certificates for resources loaded from localhost (see `chrome://flags/#allow-insecure-localhost`);
 * Navigate to [localhost:3000](http://localhost:3000).
 
 ## Project structure
