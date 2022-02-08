@@ -30,8 +30,15 @@ export const createRoom = async ():Promise<Room> => {
   // Take video snapshots every 1000 ms
   const middleware = new WebRtcSnapshotter(5000);
 
-  const processScreenshot = async (image) => {
-    middleware.off('screenshot', processScreenshot);
+  let isProcessing = false;
+
+  // Find faces in snapshots
+  middleware.on('screenshot', async (image) => {
+    if (isProcessing) {
+      return;
+    }
+
+    isProcessing = true;
 
     try {
       const faces = await encodeFaces(image);
@@ -57,11 +64,8 @@ export const createRoom = async ():Promise<Room> => {
       console.error(error.message);
     }
 
-    middleware.on('screenshot', processScreenshot);
-  };
-
-  // Find faces in snapshots
-  middleware.on('screenshot', processScreenshot);
+    isProcessing = false;
+  });
 
   // Create watcher WebRTC connection
   const peer = new WebRtcConnection(subscriber, middleware);
