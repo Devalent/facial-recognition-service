@@ -18,6 +18,7 @@ services:
             - WORKER_HOST=worker:3000
     worker:
         image: artema/facial-recognition-worker:latest
+        # Uncomment to build the recognition server from the source
         # build:
         #     context: ./worker
         #     dockerfile: Dockerfile
@@ -47,9 +48,6 @@ services:
             - COTURN_REDIS_IP=redis
             - COTURN_REDIS_PASSWORD=${OPENVIDU_SECRET}
             - COTURN_IP=${DOMAIN_OR_PUBLIC_IP}
-            # - OPENVIDU_WEBHOOK=true
-            # - OPENVIDU_WEBHOOK_ENDPOINT=http://service:3000/api/webhook
-            # - OPENVIDU_WEBHOOK_EVENTS=["participantJoined","participantLeft"]
     kms:
         image: kurento/kurento-media-server:6.16.0
         restart: always
