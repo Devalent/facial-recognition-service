@@ -106,8 +106,7 @@ export class WebRtcService {
       await this.session.publish(this.publisher);
 
       this.session.on('signal', (event: SignalEvent) => {
-        console.log(event);
-        if (event.type === 'recognition') {
+        if (event.type === 'signal:recognition') {
           const items = JSON.parse(event.data) as Recognition[];
 
           if (items.length > 0) {
@@ -148,7 +147,7 @@ export class WebRtcService {
   }
 
   attachVideo(video:HTMLVideoElement) {
-    if (this.publisher.videoReference !== video) {
+    if (this.publisher && this.publisher.videoReference !== video) {
       this.publisher.addVideoElement(video);
     }
   }

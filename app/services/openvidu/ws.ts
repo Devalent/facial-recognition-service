@@ -43,18 +43,15 @@ export class OpenViduWsClient extends EventEmitter {
     this.ws = new WebSocket(uri.toString());
 
     this.ws.on('open', () => {
-      console.log('open');
       this.init.resolve();
     });
 
     this.ws.on('close', () => {
-      console.log('close');
       this.init.reject(new Error('WebSocket disconnected.'));
     });
 
     this.ws.on('message', (data:Buffer) => {
       const message = jsonrpc.parse(data.toString('utf-8')) as jsonrpc.IParsedObject;
-      console.log('<-', JSON.stringify(message.payload));
 
       switch (message.type) {
         case 'success':
@@ -75,7 +72,6 @@ export class OpenViduWsClient extends EventEmitter {
   }
 
   async dispose() {
-    console.log('dispose');
     this.removeAllListeners();
 
     this.ws.close();
@@ -90,7 +86,7 @@ export class OpenViduWsClient extends EventEmitter {
 
     const handler = this.createHandler(id);
 
-    await new Promise((resolve, reject) => {console.log('->', JSON.stringify(payload))
+    await new Promise((resolve, reject) => {
       this.ws.send(JSON.stringify(payload), (err) => {
         if (err) {
           reject(err);

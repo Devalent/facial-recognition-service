@@ -11,46 +11,76 @@ export declare interface WebRtcSnapshotter {
 }
 
 export class WebRtcSnapshotter extends EventEmitter implements ConnectionMiddleware {
+  private intervalId:NodeJS.Timer;
+  private sink;
+  private track;
+  private lastFrame;
+
   constructor(private readonly interval:number = 1000) {
     super();
   }
 
   use(peerConnection) {
+    if (this.track) {
+      throw new Error('Middleware is already used.');
+    }
+
     const source = new RTCVideoSource();
-    const track = source.createTrack();
-    const transceiver = peerConnection.addTransceiver(track);
-    const sink = new RTCVideoSink(transceiver.receiver.track);
+    this.track = source.createTrack();
+    const transceiver = peerConnection.addTransceiver(this.track);
+    this.sink = new RTCVideoSink(transceiver.receiver.track);
 
-    let lastFrame = undefined;
-
-    sink.addEventListener('frame', (e) => {
-      lastFrame = e.frame;
+    this.sink.addEventListener('frame', (e) => {
+      this.lastFrame = e.frame;
     });
 
-    const interval = setInterval(() => {
-      if (lastFrame) {
-        const canvas = createCanvas(lastFrame.width,  lastFrame.height);
-        const context = canvas.getContext('2d');
+    this.intervalId = setInterval(() => {
+      const frame = this.lastFrame;
 
-        const rgba = new Uint8ClampedArray(lastFrame.width *  lastFrame.height * 4);
-        const rgbaFrame = createImageData(rgba, lastFrame.width, lastFrame.height);
-        i420ToRgba(lastFrame, rgbaFrame);
-
-        lastFrame = undefined;
-
-        context.putImageData(rgbaFrame, 0, 0);
-
-        this.emit('screenshot', canvas.toDataURL('image/jpeg'));
+      if (!frame) {
+        return;
       }
+
+      this.lastFrame = undefined;
+
+      const canvas = createCanvas(frame.width,  frame.height);
+      const context = canvas.getContext('2d');
+
+      const rgba = new Uint8ClampedArray(frame.width *  frame.height * 4);
+      const rgbaFrame = createImageData(rgba, frame.width, frame.height);
+      i420ToRgba(frame, rgbaFrame);
+
+      context.putImageData(rgbaFrame, 0, 0);
+
+      this.emit('screenshot', canvas.toDataURL('image/jpeg'));
     }, this.interval);
 
-    peerConnection.addEventListener('connectionstatechange', () => {
-      if (peerConnection.connectionState === 'closed') {
-        this.removeAllListeners('screenshot');
-        clearInterval(interval);
-        sink.stop();
-        track.stop();
-      }
-    });
+    const { close } = peerConnection;
+    peerConnection.close = () => {
+      this.dispose();
+
+      return close.apply(peerConnection, []);
+    };
+  }
+
+  dispose() {
+    this.removeAllListeners();
+
+    this.lastFrame = undefined;
+
+    if (this.intervalId) {
+      clearInterval(this.intervalId);
+      this.intervalId = undefined;
+    }
+
+    if (this.sink) {
+      this.sink.stop();
+      this.sink = undefined;
+    }
+
+    if (this.track) {
+      this.track.stop();
+      this.track = undefined;
+    }
   }
 }

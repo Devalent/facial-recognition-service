@@ -122,8 +122,6 @@ export class WebRtcConnection {
       this.pingInterval = undefined;
     }
 
-    await this.ws.dispose();
-
     this.peerConnection.removeEventListener('iceconnectionstatechange', this.onIceConnectionStateChange);
 
     if (this.connectionTimer) {
@@ -136,7 +134,13 @@ export class WebRtcConnection {
       this.reconnectionTimer = undefined;
     }
 
-    this.peerConnection.close();
+    try {
+      this.peerConnection.close();
+    } catch (err) {}
+
+    try {
+      await this.ws.dispose();
+    } catch (err) {}
   }
 
   private async processOffer(streamId:string) {

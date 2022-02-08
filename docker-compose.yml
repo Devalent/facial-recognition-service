@@ -7,7 +7,7 @@ services:
             dockerfile: Dockerfile
         restart: always
         depends_on:
-            - openvidu
+            - nginx
             - worker
         ports:
             - "3000:3000"
@@ -16,6 +16,9 @@ services:
             - OPENVIDU_HOST=nginx:8081
             - OPENVIDU_SECRET=${OPENVIDU_SECRET}
             - WORKER_HOST=worker:3000
+            - WAIT_HOSTS=nginx:8081, worker:3000, openvidu:5443
+            - WAIT_TIMEOUT=120
+            - WAIT_SLEEP_INTERVAL=5
     worker:
         image: artema/facial-recognition-worker:latest
         # Uncomment to build the recognition server from the source

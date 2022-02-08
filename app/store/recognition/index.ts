@@ -9,6 +9,10 @@ export type Room = {
 };
 
 export type Recognition = {
+  x:number;
+  y:number;
+  width:number;
+  height:number;
   image:string;
   encodings:number[];
 };
