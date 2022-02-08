@@ -31,10 +31,11 @@ export const createRoom = async ():Promise<Room> => {
   const middleware = new WebRtcSnapshotter(5000);
 
   let isProcessing = false;
+  let isDisposed = false;
 
   // Find faces in snapshots
   middleware.on('screenshot', async (image) => {
-    if (isProcessing) {
+    if (isProcessing || isDisposed) {
       return;
     }
 
@@ -52,10 +53,13 @@ export const createRoom = async ():Promise<Room> => {
         try {
           await session.fetch();
 
-          await sendSignal(session.sessionId, publisher.connectionId, 'recognition', response);
+          if (!isDisposed) {
+            await sendSignal(session.sessionId, publisher.connectionId, 'recognition', response);
+          }
         } catch (error) {
           // Stop on session errors
           middleware.dispose();
+          isDisposed = true;
 
           throw error;
         }
@@ -74,6 +78,7 @@ export const createRoom = async ():Promise<Room> => {
     await peer.connect();
   } catch (error) {
     middleware.dispose();
+    isDisposed = true;
 
     throw error;
   }
