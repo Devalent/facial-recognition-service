@@ -61,6 +61,7 @@ export const slice = createSlice({
           // Calculate the Euclidean distance, which is a measure
           // of how two faces are similar to each other.
           // The lower the distance, the more similarity they share.
+          // See https://en.wikipedia.org/wiki/Euclidean_distance
           const sum = existing.encodings.reduce((res, x1, i) => {
             const x2 = newFace.encodings[i];
   
@@ -69,7 +70,7 @@ export const slice = createSlice({
 
           const distance = Math.sqrt(sum);
   
-          // Only consider faces that are close enough
+          // Only consider faces that are similar enough (distance < 0.6)
           if (distance >= 0 && distance < state.threshold) {
             candidates.push({
               match: existing,
@@ -86,8 +87,19 @@ export const slice = createSlice({
           ? candidate.match.personId
           : ++state.uniques;
 
+        let similarity = undefined;
+
+        // Calculate the similarity percentage
+        // See https://github.com/ageitgey/face_recognition/wiki/Calculating-Accuracy-as-a-Percentage
+        if (candidate) {
+          const linear = 1.0 - (candidate.distance / (state.threshold * 2.0));
+          const score = linear + ((1.0 - linear) * Math.pow((linear - 0.5) * 2, 0.2));
+          similarity = Math.round(score * 100);
+        }
+
         const addItem:RecognitionMatch = {
           personId,
+          similarity,
           id: ++state.lastId,
           created: Date.now(),
           encodings: newFace.encodings,
@@ -95,9 +107,6 @@ export const slice = createSlice({
           name: `Person #${personId}`,
           color: state.colors[personId % state.colors.length],
           distance: candidate?.distance,
-          similarity: candidate
-            ? Math.round((1 - (candidate.distance || 0)) * 100)
-            : undefined,
         };
 
         facesToAdd.push(addItem);
