@@ -58,9 +58,13 @@ export const slice = createSlice({
   
         const candidates:RecognitionCandidate[] = [];
   
+        // Compare each new face with all existing faces
         for (let j = 0; j < existingItems.length; j++) {
           const match = existingItems[j];
   
+          // Calculate the Euclidean distance, which is a measure
+          // of how two faces are similar to each other.
+          // The lower the distance, the more similarity they share.
           let sum = 0;
           for (let k = 0; k < match.encodings.length; k++) {
             const x1 = match.encodings[k];
@@ -71,6 +75,7 @@ export const slice = createSlice({
   
           const distance = Math.sqrt(sum);
   
+          // Only consider faces that are close enough
           if (distance >= 0 && distance < DISTANCE_THRESHOLD) {
             candidates.push({
               match,
@@ -79,6 +84,7 @@ export const slice = createSlice({
           }
         }
   
+        // Find a face with the shortest euclidean distance 
         const candidate = candidates
           .sort((a, b) => a.distance - b.distance)[0];
   
