@@ -2,7 +2,7 @@
 
 An example implementation of a real-time facial recognition server that processes WebRTC streams from web browsers to detect and to encode faces. See [this blog post](https://devalent.com/blog/how-to-build-a-real-time-facial-recognition-service/) of an in-depth explanation.
 
-## Demo
+## Demo :rocket:
 
 A [demo application](https://devalent.github.io/facial-recognition-app/) is available online. It doesn't have a backend and runs on a pre-built data made from the Labeled Faces in the Wild dataset ("people with name starting with A" subset), which has been processed by the same algorithm that is used if you run the backend yourself.
 
