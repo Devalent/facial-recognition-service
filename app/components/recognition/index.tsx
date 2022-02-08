@@ -6,7 +6,6 @@ import { useAppSelector } from '../../store';
 import styles from './recognition.module.scss';
 
 export default function Recognition() {
-  const isStandalone = useAppSelector(s => s.demo.isStandalone);
   const items = useAppSelector(s => s.recognition.matches);
   const [selectedPerson, setSelectedPerson] = useState(null);
 
@@ -22,12 +21,8 @@ export default function Recognition() {
     <div className="container px-4 px-lg-5 mt-5">
       <h2 className="fw-bolder mb-4">Recognition results</h2>
       <div className="col-md-6">
-        <p className="lead">Lorem ipsum dolor sit amet consectetur adipisicing elit. Praesentium at dolorem quidem modi. Nam sequi consequatur obcaecati excepturi alias magni, accusamus eius blanditiis delectus ipsam minima ea iste laborum vero?</p>
-        { isStandalone &&
-          <div className="alert alert-warning">
-            Lorem ipsum dolor sit amet consectetur adipisicing elit. Praesentium at dolorem quidem modi. Nam sequi consequatur obcaecati excepturi alias magni, accusamus eius blanditiis delectus ipsam minima ea iste laborum vero?
-          </div>
-        }
+        <p className="lead">The application receives face data from the backend and compares it to the previously received faces. If a similarity of at least 50% is reached, a face is considered to belong to the same person.</p>
+        <p>Click on a photo to highlight all faces that belong to the same person.</p>
       </div>
       <div className="row gx-3 gx-lg-4 row-cols-4 row-cols-md-5 row-cols-xl-6">
         {

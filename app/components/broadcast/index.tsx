@@ -34,7 +34,12 @@ export function BroadcastComponent() {
             </div>
             <div className="col-md-6">
                 <h1 className="display-5 fw-bolder">Facial recognition demo</h1>
-                <p className="lead">Lorem ipsum dolor sit amet consectetur adipisicing elit. Praesentium at dolorem quidem modi. Nam sequi consequatur obcaecati excepturi alias magni, accusamus eius blanditiis delectus ipsam minima ea iste laborum vero?</p>
+                <p className="lead">An example implementation of a real-time facial recognition server that processes WebRTC video streams to detect and to encode faces.</p>
+                { isStandalone &&
+                  <div className="alert alert-warning">
+                    This application runs on a pre-processed data instead of streaming from your webcam to backend. If you want to see a complete example, try running the project yourself. See the GitHub repo for details.
+                  </div>
+                }
                 <div className="d-flex">
                   <div>
                     { (status === 'ready' || status === 'preparing') && 
