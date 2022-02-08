@@ -6,13 +6,15 @@ import json
 from PIL import Image
 import numpy as np
 
-files = glob.glob("./data/*.jpg")
+files = glob.glob("./data/**/*.jpg")
 
 print(f'Found {len(files)} files')
 
 results = []
 
 for f in files:
+  print(f'Processing {f}')
+
   image = face_recognition.load_image_file(f)
   locations = face_recognition.face_locations(image)
   encodings = face_recognition.face_encodings(image, locations)

@@ -1,4 +1,7 @@
 import { createSlice } from '@reduxjs/toolkit';
+import randomColor from 'randomcolor';
+
+import { changeState } from '../demo';
 
 export type Room = {
   id:string;
@@ -12,11 +15,14 @@ export type Recognition = {
 
 export type RecognitionMatch = {
   id:number;
+  personId:number;
   created:number;
   image:string;
   name:string;
+  color:string;
   encodings:number[];
   distance?:number;
+  probability?:number;
 };
 
 type RecognitionCandidate = {
@@ -24,9 +30,12 @@ type RecognitionCandidate = {
   distance:number;
 };
 
+const colors = Array.from(Array(100)).map(() => randomColor({ luminosity: 'dark' }));
+
 export const slice = createSlice({
   name: 'recognition', 
   initialState: {
+    colors,
     uniques: 0,
     lastId: 0,
     matches: [] as RecognitionMatch[],
@@ -69,15 +78,22 @@ export const slice = createSlice({
         const candidate = candidates
           .sort((a, b) => a.distance - b.distance)[0];
   
+        const personId = candidate
+          ? candidate.match.personId
+          : ++state.uniques;
+
         const addItem:RecognitionMatch = {
+          personId,
           id: ++state.lastId,
           created: Date.now(),
           encodings: newItem.encodings,
           image: newItem.image,
-          name: candidate
-            ? candidate.match.name
-            : `Person #${++state.uniques}`,
+          name: `Person #${personId}`,
+          color: state.colors[personId % state.colors.length],
           distance: candidate?.distance,
+          probability: candidate
+            ? Math.round((1 - (candidate.distance || 0)) / (1 / 100))
+            : undefined,
         };
 
         addedItems.push(addItem);
@@ -88,8 +104,15 @@ export const slice = createSlice({
         ...addedItems,
       ]
         .sort((a, b) => a.created - b.created)
-        .filter((x, i) => i < 20);
+        // .filter((x, i) => i < 20);
     },
+  },
+  extraReducers: (builder) => {
+    builder.addCase(changeState, (state, action) => {
+      state.matches = [];
+      state.uniques = 0;
+      state.lastId = 0;
+    });
   },
 })
 

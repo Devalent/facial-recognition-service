@@ -1,10 +1,5 @@
 import { Recognition } from '../../store/recognition';
 
-const data:Recognition[] = [
-  {
-    image: 'image',
-    encodings: [0.1, 0.2, -0.1, -0.2],
-  },
-];
+import data from '../../data.json';
 
-export default data;
+export default data as Recognition[];

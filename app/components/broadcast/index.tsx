@@ -1,3 +1,4 @@
+import Image from 'next/image';
 import React, { useContext } from 'react';
 
 import Noise from '../noise';
@@ -29,7 +30,7 @@ export function BroadcastComponent() {
               { status === 'broadcasting' && !isStandalone &&
                   <video width={640} height={480} ref={e => webrtc.attachVideo(e)} style={{ width: '100%', height: 'auto', maxWidth: 640 }}></video> }
               { status === 'broadcasting' && isStandalone &&
-                  <div>Video</div> }
+                  <Image src="/testcard.png" width={640} height={480} alt="" /> }
             </div>
             <div className="col-md-6">
                 <h1 className="display-5 fw-bolder">Facial recognition demo</h1>

@@ -11,6 +11,8 @@ import { addRecognitions, Recognition } from '../../store/recognition';
 
 import fakeData from './data';
 
+const FAKE_INTERVAL = 1000;
+
 export class FakeRtcService {
   private interval:NodeJS.Timer;
 
@@ -21,19 +23,22 @@ export class FakeRtcService {
   async startBroadcast() {
     this.dispatch(changeState('preparing'));
 
-    await new Promise((r) => setTimeout(r, 2000));
+    await new Promise((r) => setTimeout(r, 1000));
 
     this.dispatch(changeState('broadcasting'));
 
+    const lastIndexes:number[] = [];
+
     this.interval = setInterval(() => {
       const indexes:number[] = [];
-      const total = Math.min(Math.ceil(Math.random() * 3), fakeData.length);
+      const total = 1; // Math.min(Math.ceil(Math.random() * 2), fakeData.length);
 
-      while (indexes.length < total) {
+      while (indexes.length < total && lastIndexes.length < fakeData.length) {
         const i = Math.floor(Math.random() * fakeData.length);
 
-        if (!indexes.includes(i)) {
+        if (!indexes.includes(i) && !lastIndexes.includes(i)) {
           indexes.push(i);
+          lastIndexes.push(i);
         }
       }
 
@@ -42,7 +47,7 @@ export class FakeRtcService {
       if (items.length > 0) {
         this.dispatch(addRecognitions(items));
       }
-    }, 1000);
+    }, FAKE_INTERVAL);
   }
 
   async stopBroadcast() {
