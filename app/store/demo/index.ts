@@ -1,11 +1,15 @@
 import { createSlice } from '@reduxjs/toolkit';
 
+import config from '../../config';
+
 export type DemoState = 'ready' | 'preparing' | 'broadcasting';
 
 export const demoSlice = createSlice({
   name: 'demo',
   initialState: {
-    isStandalone: !!process.env.STANDALONE,
+    isStandalone: config.use_test_data,
+    videoWidth: config.video_width,
+    videoHeight: config.video_height,
     status: 'ready' as DemoState,
   },
   reducers: {

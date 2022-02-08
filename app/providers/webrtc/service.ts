@@ -5,13 +5,15 @@ import {
   SignalEvent,
 } from 'openvidu-browser'
 
+import config from '../../config';
+
 import { AppDispatch } from '../../store';
 import { changeState, setError} from '../../store/demo';
 import { addRecognitions, Recognition } from '../../store/recognition';
 
 import fakeData from './data';
 
-const FAKE_INTERVAL = 1000;
+const FAKE_INTERVAL = Math.round((1 / config.recognition_fps) * 1000);
 
 export class FakeRtcService {
   private interval:NodeJS.Timer;
@@ -98,7 +100,7 @@ export class WebRtcService {
         videoSource: undefined,
         publishAudio: false,
         publishVideo: true,
-        resolution: '640x480',
+        resolution: `${config.video_width}x${config.video_height}`,
         frameRate: 30,
         mirror: false,
       });

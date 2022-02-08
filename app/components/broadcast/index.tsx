@@ -18,6 +18,8 @@ export default function BroadcastContainer() {
 export function BroadcastComponent() {
   const isStandalone = useAppSelector(s => s.demo.isStandalone);
   const status = useAppSelector(s => s.demo.status);
+  const videoWidth = useAppSelector(s => s.demo.videoWidth);
+  const videoHeight = useAppSelector(s => s.demo.videoHeight);
 
   const webrtc = useContext(WebRtcContext);
 
@@ -28,7 +30,7 @@ export function BroadcastComponent() {
               { status !== 'broadcasting' && 
                   <Noise /> }
               { status === 'broadcasting' && !isStandalone &&
-                  <video width={640} height={480} ref={e => webrtc.attachVideo(e)} style={{ width: '100%', height: 'auto', maxWidth: 640 }}></video> }
+                  <video width={videoWidth} height={videoHeight} ref={e => webrtc.attachVideo(e)} style={{ width: '100%', height: 'auto', maxWidth: videoWidth }}></video> }
               { status === 'broadcasting' && isStandalone &&
                   <Image src="/testcard.png" width={640} height={480} alt="" /> }
             </div>

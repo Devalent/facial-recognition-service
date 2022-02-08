@@ -1,6 +1,8 @@
 import { createSlice } from '@reduxjs/toolkit';
 import randomColor from 'randomcolor';
 
+import config from '../../config';
+
 import { changeState } from '../demo';
 
 export type Room = {
@@ -26,7 +28,7 @@ export type RecognitionMatch = {
   color:string;
   encodings:number[];
   distance?:number;
-  probability?:number;
+  similarity?:number;
 };
 
 type RecognitionCandidate = {
@@ -40,45 +42,37 @@ export const slice = createSlice({
   name: 'recognition', 
   initialState: {
     colors,
+    threshold: config.recognition_threshold,
     uniques: 0,
     lastId: 0,
     matches: [] as RecognitionMatch[],
   },
   reducers: {
     addRecognitions: (state, action) => {
-      const DISTANCE_THRESHOLD = 0.5;
-
-      const existingItems = state.matches;
-      const newItems = action.payload as Recognition[];
-
-      const addedItems = [] as RecognitionMatch[];
+      const existingFaces = state.matches;
+      const newFaces:Recognition[] = action.payload;
+      const facesToAdd:RecognitionMatch[] = [];
   
-      for (let i = 0; i < newItems.length; i++) {
-        const newItem = newItems[i];
-  
+      for (const newFace of newFaces) {
         const candidates:RecognitionCandidate[] = [];
   
         // Compare each new face with all existing faces
-        for (let j = 0; j < existingItems.length; j++) {
-          const match = existingItems[j];
-  
+        for (const existing of existingFaces) { 
           // Calculate the Euclidean distance, which is a measure
           // of how two faces are similar to each other.
           // The lower the distance, the more similarity they share.
-          let sum = 0;
-          for (let k = 0; k < match.encodings.length; k++) {
-            const x1 = match.encodings[k];
-            const x2 = newItem.encodings[k];
+          const sum = existing.encodings.reduce((res, x1, i) => {
+            const x2 = newFace.encodings[i];
   
-            sum += (x1 - x2) ** 2;
-          }
-  
+            return res + ((x1 - x2) ** 2);
+          }, 0)
+
           const distance = Math.sqrt(sum);
   
           // Only consider faces that are close enough
-          if (distance >= 0 && distance < DISTANCE_THRESHOLD) {
+          if (distance >= 0 && distance < state.threshold) {
             candidates.push({
-              match,
+              match: existing,
               distance,
             });
           }
@@ -96,25 +90,25 @@ export const slice = createSlice({
           personId,
           id: ++state.lastId,
           created: Date.now(),
-          encodings: newItem.encodings,
-          image: newItem.image,
+          encodings: newFace.encodings,
+          image: newFace.image,
           name: `Person #${personId}`,
           color: state.colors[personId % state.colors.length],
           distance: candidate?.distance,
-          probability: candidate
-            ? Math.round((1 - (candidate.distance || 0)) / (1 / 100))
+          similarity: candidate
+            ? Math.round((1 - (candidate.distance || 0)) * 100)
             : undefined,
         };
 
-        addedItems.push(addItem);
+        facesToAdd.push(addItem);
       }
 
       state.matches = [
-        ...existingItems,
-        ...addedItems,
+        ...existingFaces,
+        ...facesToAdd,
       ]
         .sort((a, b) => a.created - b.created)
-        // .filter((x, i) => i < 20);
+        .filter((x, i) => i < 100);
     },
   },
   extraReducers: (builder) => {

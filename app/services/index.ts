@@ -1,5 +1,7 @@
 import { OpenViduRole } from 'openvidu-node-client';
 
+import config from '../config';
+
 import { WebRtcConnection } from './openvidu/connection';
 import { WebRtcSnapshotter } from './openvidu/middleware';
 import { restClient, sendSignal } from './openvidu/rest';
@@ -10,6 +12,8 @@ export type Room = {
   id:string;
   connection:string;
 };
+
+const RECOGNITION_INTERVAL = Math.round((1 / config.recognition_fps) * 1000);
 
 export const createRoom = async ():Promise<Room> => {
   // Create OpenVidu room
@@ -27,8 +31,8 @@ export const createRoom = async ():Promise<Room> => {
     data: JSON.stringify({}),
   });
   
-  // Take video snapshots every 1000 ms
-  const middleware = new WebRtcSnapshotter(5000);
+  // Take regular video snapshots
+  const middleware = new WebRtcSnapshotter(RECOGNITION_INTERVAL);
 
   let isProcessing = false;
   let isDisposed = false;
