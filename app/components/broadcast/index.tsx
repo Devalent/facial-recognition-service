@@ -39,7 +39,7 @@ export function BroadcastComponent() {
                 <p className="lead">An example implementation of a real-time facial recognition server that processes WebRTC video streams to detect and to encode faces.</p>
                 { isStandalone &&
                   <div className="alert alert-warning">
-                    This application runs on a pre-processed data instead of streaming from your webcam to backend. If you want to see a complete example, try running the project yourself. See the GitHub repo for details.
+                    This application runs on pre-processed data (a dataset of celebrity faces) instead of streaming from your webcam to backend. If you want to see a complete example, try running the project yourself. See the GitHub repo for details.
                   </div>
                 }
                 <div className="d-flex">
