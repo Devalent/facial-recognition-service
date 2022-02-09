@@ -27,7 +27,7 @@ export default function Recognition() {
         <p className="lead">The application receives face data from the backend and compares it to the previously received faces. If a similarity of at least {similarity}% is detected, a face is considered to belong to the same person.</p>
         <p>Click on a photo to highlight all faces of a particular person.</p>
       </div>
-      <div className="row gx-3 gx-lg-4 row-cols-4 row-cols-md-5 row-cols-xl-6">
+      <div className="row gx-3 gx-lg-4 row-cols-2 row-cols-md-4 row-cols-xl-6">
         {
           items
           .map((item) => (
