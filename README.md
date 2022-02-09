@@ -1,6 +1,6 @@
 # Facial recognition web service example
 
-An example implementation of a real-time facial recognition server that processes WebRTC streams from web browsers to detect and to encode faces. See [this blog post](https://devalent.com/blog/how-to-build-a-real-time-facial-recognition-service/) of an in-depth explanation.
+An example implementation of a real-time facial recognition server that processes WebRTC streams from web browsers, detects and encodes faces. See [this blog post](https://devalent.com/blog/how-to-build-a-real-time-facial-recognition-service/) for an in-depth explanation.
 
 ## Demo :rocket:
 
